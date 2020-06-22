@@ -9,31 +9,32 @@ namespace CallCognitiveAPI
     {
         static void Main(string[] args)
         {
-            string url = "https://eastus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=zh-CN&format=detailed";
-            string base64str = File.ReadAllText(@"E:\Repo\AudioBase64Converter\audio\convertwavbase64.txt");
-            string responseContentTxt = @"E:\Repo\AudioBase64Converter\audio\responseContentTxt.txt";
+            string url = "https://webmwavfunctionconverterapp.azurewebsites.net/api/CallFFMPeg";
+            string base64str = File.ReadAllText(@"C:\Users\ethan\Desktop\AudioSource\testwebmbase64.txt");
+            string convertedWavFilePath = @"C:\Users\ethan\Desktop\AudioSource\convertedwav.wav";
 
+            using (var fs = File.Create(convertedWavFilePath))
+            {
+
+            }          
 
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
-            httpWebRequest.Method = "POST";
-            httpWebRequest.Accept = @"application/json;text/xml";
-            httpWebRequest.ProtocolVersion = HttpVersion.Version11;
-            httpWebRequest.Host = "eastus.stt.speech.microsoft.com";
-            httpWebRequest.ContentType = @"audio/wav; codecs=audio/pcm; samplerate=16000";
-            httpWebRequest.Headers["Ocp-Apim-Subscription-Key"] = "a7ab1a67c9544c529f877cabd75c67e6";
-            var s = httpWebRequest.GetRequestStream();
-            var strings = new StringContent(base64str);
+            httpWebRequest.Method = "POST";           
+            httpWebRequest.ContentType = "application/octet-stream";
+           
 
             byte[] btBodys = Convert.FromBase64String(base64str);
             httpWebRequest.ContentLength = btBodys.Length;
             httpWebRequest.GetRequestStream().Write(btBodys, 0, btBodys.Length);
 
-            HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream());
-            string responseContent = streamReader.ReadToEnd();
-            File.WriteAllText(responseContentTxt, responseContent);
-            httpWebResponse.Close();
-            streamReader.Close();
+            HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();            
+            
+            using (var ms = new MemoryStream())
+            {
+                httpWebResponse.GetResponseStream().CopyTo(ms);
+                File.WriteAllBytes(convertedWavFilePath, ms.ToArray());
+            }
+            
             httpWebRequest.Abort();
             httpWebResponse.Close();
         }
